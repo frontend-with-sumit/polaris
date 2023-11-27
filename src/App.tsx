@@ -1,16 +1,22 @@
 import { Route, Routes } from "react-router-dom";
+
+import Dashboard from "./components/Dashboard/Dashboard";
+import Sidebar from "./components/Dashboard/Sidebar";
+
 import "./App.css";
-import Dashboard from "./components/Dashboard";
-import Home from "./components/Home";
 
 function App() {
 	return (
-		<div>
-			<Routes>
-				<Route path="/" Component={Home} />
-				<Route path="/visualize" Component={Dashboard} />
-			</Routes>
-		</div>
+		<main className="bg-gray-50 flex min-h-screen min-w-screen">
+			<Sidebar />
+			<div>
+				<header>Header</header>
+				<Routes>
+					<Route path="/" />
+					<Route path="/visualize" Component={Dashboard} />
+				</Routes>
+			</div>
+		</main>
 	);
 }
 
