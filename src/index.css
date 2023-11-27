@@ -1,9 +1,8 @@
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
+	color: #28282b;
 	font-family: "Sen", sans-serif;
 }
