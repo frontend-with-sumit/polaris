@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-
+import { Toaster } from "react-hot-toast";
 import Dashboard from "./components/Dashboard/Dashboard";
 import Sidebar from "./components/Dashboard/Sidebar/Sidebar";
 import Header from "./components/Dashboard/Header/Header";
@@ -17,6 +17,7 @@ function App() {
 					<Route path="/visualize" Component={Dashboard} />
 				</Routes>
 			</div>
+			<Toaster />
 		</main>
 	);
 }
