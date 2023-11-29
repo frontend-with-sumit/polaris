@@ -1,4 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
+import moment, { Moment } from "moment";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 import { isEmpty } from "lodash";
@@ -25,7 +26,7 @@ const renderStats = ({
 	<div className="flex gap-4">
 		{/* FIXME: Replace the stats with actual data */}
 		<StatCard
-			label="Total power consumption by all meters"
+			label="Total power consumption"
 			accentClasses="before:bg-accent-1"
 			stats={formatNumber(totalConsumption)}
 			icon={<GiPowerLightning size={24} className="text-accent-1" />}
@@ -43,6 +44,12 @@ export interface ExcelData {
 	[key: string]: (string | number)[];
 }
 
+interface Filters {
+	from: Moment | string;
+	to: Moment | string;
+	meter: string;
+}
+
 const ALLOWED_FILES = ["text/csv"];
 
 const Dashboard = () => {
@@ -52,6 +59,7 @@ const Dashboard = () => {
 		clusterConsumption: 0,
 	});
 	const [isLineChart, setLineChart] = useState<boolean>(false);
+	const [visibleDatasets, setVisibleDatasets] = useState<string[]>([]);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -103,19 +111,56 @@ const Dashboard = () => {
 	useEffect(() => {
 		if (!isEmpty(excelData)) {
 			// perform calculation for stats
+
+			if (visibleDatasets.length === 0)
+				setVisibleDatasets(Object.keys(excelData).slice(1));
 		}
 	}, [excelData]);
+
+	const handleApplyFilter = ({ from, to, meter }: Filters) => {
+		if (moment(from).isAfter(moment(to)))
+			return toast.error("From date cannot be after to date");
+
+		if (from && to) {
+			const filteredExcelData = {};
+			const fromIdx = excelData.timestamp.findIndex((ts) =>
+				moment(ts, "DD/MM/YY HH:mm").isSameOrAfter(moment(from))
+			);
+			const toIdx = excelData.timestamp.findIndex((ts) =>
+				moment(ts, "DD/MM/YY HH:mm").isSameOrAfter(moment(to))
+			);
+
+			const legends = Object.keys(excelData);
+			legends.forEach((legend) => {
+				filteredExcelData[legend] = excelData[legend].slice(fromIdx, toIdx + 1);
+			});
+
+			setExcelData(filteredExcelData);
+		}
+
+		// Only work when a meter is selected
+		if (meter) setVisibleDatasets([meter]);
+	};
 
 	return (
 		<section className="p-6 flex flex-col gap-6">
 			{renderStats(stats)}
 			<div className="flex flex-col gap-4">
 				<h2 className="text-2xl font-semibold">Analytics</h2>
-				<Form />
+				{!isEmpty(excelData) && (
+					<Form
+						legends={Object.keys(excelData).slice(1)}
+						onApply={(filters) => handleApplyFilter(filters)}
+					/>
+				)}
 				<div className="bg-white p-6 rounded-md">
 					{!isEmpty(excelData) ? (
 						<div className="flex flex-col w-full h-fit">
-							<Charts excelData={excelData} type={isLineChart ? "line" : ""} />
+							<Charts
+								excelData={excelData}
+								type={isLineChart ? "line" : ""}
+								visibleDatasets={visibleDatasets}
+							/>
 							<Switch
 								className="my-3 m-auto"
 								isChecked={isLineChart}

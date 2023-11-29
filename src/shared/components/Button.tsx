@@ -1,3 +1,5 @@
+import { cx } from "../utils/classHelper";
+
 interface Props {
 	label: string;
 	className?: string;
@@ -5,9 +7,13 @@ interface Props {
 	disabled?: boolean;
 }
 
-const Button = ({ label, className, onClick, disabled }: Props) => {
+const Button = ({ label, className = "", onClick, disabled }: Props) => {
 	return (
-		<button className={className} onClick={onClick} disabled={disabled}>
+		<button
+			className={cx("px-3 rounded-md text-sm", className)}
+			onClick={onClick}
+			disabled={disabled}
+		>
 			{label}
 		</button>
 	);

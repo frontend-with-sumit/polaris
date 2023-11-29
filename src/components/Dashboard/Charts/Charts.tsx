@@ -28,6 +28,7 @@ ChartJS.register(
 interface Props {
 	excelData: ExcelData;
 	type: string;
+	visibleDatasets: string[];
 }
 interface ChartData {
 	labels: (string | number)[];
@@ -35,10 +36,11 @@ interface ChartData {
 		label: string;
 		data: (string | number)[];
 		tension?: number;
+		hidden?: boolean;
 	}[];
 }
 
-const Charts = ({ excelData, type }: Props) => {
+const Charts = ({ excelData, type, visibleDatasets }: Props) => {
 	const [chartData, setChartData] = useState({} as ChartData);
 	const options = {
 		responsive: true,
@@ -76,7 +78,12 @@ const Charts = ({ excelData, type }: Props) => {
 	) => {
 		const chartData: {
 			labels: (string | number)[];
-			datasets: { label: string; data: (string | number)[] }[];
+			datasets: {
+				label: string;
+				data: (string | number)[];
+				tension?: number;
+				hidden?: boolean;
+			}[];
 		} = {
 			labels,
 			datasets: [],
@@ -86,6 +93,8 @@ const Charts = ({ excelData, type }: Props) => {
 			chartData.datasets.push({
 				label: legend,
 				data: dataPoints[idx],
+				tension: 0.4,
+				hidden: !visibleDatasets.includes(legend),
 			});
 		});
 
@@ -104,7 +113,7 @@ const Charts = ({ excelData, type }: Props) => {
 
 			setChartData(chartData);
 		}
-	}, [excelData]);
+	}, [excelData, visibleDatasets]);
 
 	return (
 		<div className="h-[400px] w-full">
