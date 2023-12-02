@@ -18,7 +18,7 @@ import Button from "../../shared/components/Button";
 import Switch from "../../shared/components/Switch/Switch";
 import notificationCtx from "../../shared/contexts/notificationContext.ts";
 
-const renderStats = ({
+const RenderStats = ({
 	maxConsumption,
 	maxLeakageCurrent,
 }: {
@@ -220,7 +220,11 @@ const Dashboard = () => {
 
 	return (
 		<section className="p-6 flex flex-col gap-6">
-			{renderStats(stats)}
+			<RenderStats
+				maxConsumption={stats?.maxConsumption}
+				maxLeakageCurrent={stats?.maxLeakageCurrent}
+			/>
+
 			<div className="flex flex-col gap-4">
 				<h2 className="text-2xl font-semibold">Analytics</h2>
 				{!isEmpty(excelData) && (

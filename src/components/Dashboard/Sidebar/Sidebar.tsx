@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MdSpaceDashboard } from "react-icons/md";
 import { IoSettingsSharp, IoHelpCircle } from "react-icons/io5";
 
@@ -20,20 +20,25 @@ const ITEMS: Item[] = [
 	{
 		id: 2,
 		label: "Settings",
-		path: "",
+		path: "/settings",
 		icon: <IoSettingsSharp size={26} />,
 	},
 	{
 		id: 3,
 		label: "Support",
-		path: "",
+		path: "/support",
 		icon: <IoHelpCircle size={26} />,
 	},
 ];
 
 const Sidebar = () => {
 	const navigate = useNavigate();
-	const [activeItem, setActiveItem] = useState<number>(0);
+	const location = useLocation();
+	const [activeItem, setActiveItem] = useState<string>("");
+
+	useEffect(() => {
+		setActiveItem(location.pathname);
+	}, [location.pathname]);
 
 	return (
 		<aside className="bg-white w-[300px] text-center py-10 shadow-sm">
@@ -44,13 +49,13 @@ const Sidebar = () => {
 						className={`w-full relative`}
 						onClick={() => {
 							navigate(item?.path);
-							setActiveItem(item?.id);
+							setActiveItem(item?.path);
 						}}
 					>
 						<div
 							className={`flex items-center gap-3 text-left text-lg font-medium cursor-pointer px-20 py-6 hover:bg-slate-100 ${
-								activeItem === item?.id
-									? "bg-slate-100 font-semibold after:absolute after:bg-violet-500 after:h-full after:w-2 after:inline-block after:right-0"
+								activeItem === item?.path
+									? "bg-slate-100 font-semibold before:absolute before:bg-violet-500 before:h-full before:w-2 before:inline-block before:left-0"
 									: ""
 							}`}
 						>
