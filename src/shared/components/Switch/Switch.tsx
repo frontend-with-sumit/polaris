@@ -4,8 +4,8 @@ import "./Switch.css";
 interface Props {
 	className?: string;
 	isChecked: boolean;
-	leftLabel: React.ReactNode | string;
-	rightLabel: React.ReactNode | string;
+	leftLabel?: React.ReactNode | string;
+	rightLabel?: React.ReactNode | string;
 	onChange: () => void;
 }
 

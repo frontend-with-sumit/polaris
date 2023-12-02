@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { isEmpty, capitalize } from "lodash";
 import {
 	Chart as ChartJS,
@@ -10,9 +10,12 @@ import {
 	Tooltip,
 	Legend,
 	Colors,
+	Chart,
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
 import { ExcelData } from "../Dashboard";
+import Button from "../../../shared/components/Button";
+import notificationCtx from "../../../shared/contexts/notificationContext";
 
 ChartJS.register(
 	LineElement,
@@ -41,8 +44,15 @@ interface ChartData {
 }
 
 const Charts = ({ excelData, type, visibleDatasets }: Props) => {
+	const notifCtx = useContext(notificationCtx);
 	const [chartData, setChartData] = useState({} as ChartData);
+	const chartRef = useRef<Chart | null>(null);
+
 	const options = {
+		point: {
+			radius: 5,
+			borderRadius: 7,
+		},
 		responsive: true,
 		plugins: {
 			legend: {
@@ -83,6 +93,7 @@ const Charts = ({ excelData, type, visibleDatasets }: Props) => {
 				data: (string | number)[];
 				tension?: number;
 				hidden?: boolean;
+				stack?: string;
 			}[];
 		} = {
 			labels,
@@ -95,6 +106,7 @@ const Charts = ({ excelData, type, visibleDatasets }: Props) => {
 				data: dataPoints[idx],
 				tension: 0.4,
 				hidden: !visibleDatasets.includes(legend),
+				stack: "bar",
 			});
 		});
 
@@ -115,13 +127,36 @@ const Charts = ({ excelData, type, visibleDatasets }: Props) => {
 		}
 	}, [excelData, visibleDatasets]);
 
+	useEffect(() => {
+		if (notifCtx?.activeTimestamp) handleHighlightTimestamp();
+	}, [notifCtx?.activeTimestamp]);
+
+	const handleHighlightTimestamp = () => {
+		if (chartRef.current !== null && notifCtx) {
+			const chartInstance: Chart = chartRef.current;
+
+			const activeItems = chartData?.datasets.map((_, idx) => ({
+				datasetIndex: idx,
+				index: notifCtx?.activeTimestamp,
+			}));
+
+			chartInstance.setActiveElements(activeItems);
+
+			chartData.datasets.forEach((_, idx) => {
+				chartInstance.data.datasets[idx].hoverBackgroundColor = "red";
+			});
+
+			chartInstance.update();
+		}
+	};
+
 	return (
 		<div className="h-[400px] w-full">
 			{!isEmpty(chartData) &&
 				(type === "line" ? (
-					<Line data={chartData} options={options} />
+					<Line ref={chartRef} data={chartData} options={options} />
 				) : (
-					<Bar data={chartData} options={options} />
+					<Bar ref={chartRef} data={chartData} options={options} />
 				))}
 		</div>
 	);

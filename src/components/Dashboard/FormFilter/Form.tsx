@@ -24,7 +24,7 @@ const Form = ({ legends, onApply }: Props) => {
 	});
 
 	return (
-		<div className="flex gap-5">
+		<div className="flex gap-5 bg-white px-3 py-6 rouned-md">
 			<Datetime
 				className="w-fit"
 				dateFormat="DD/MM/YY"

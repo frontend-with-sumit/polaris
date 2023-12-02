@@ -1,8 +1,8 @@
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import moment, { Moment } from "moment";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
-import { isEmpty } from "lodash";
+import { isEmpty, uniqueId } from "lodash";
 
 import { GiPowerLightning } from "react-icons/gi";
 import { MdElectricMeter } from "react-icons/md";
@@ -11,10 +11,12 @@ import { FaChartColumn, FaChartLine } from "react-icons/fa6";
 import StatCard from "./StatCard";
 import Charts from "./Charts/Charts";
 import Form from "./FormFilter/Form.tsx";
+import { INotification } from "./Header/Notifications/Notification.tsx";
 
 import { formatNumber } from "../../shared/utils/formatNumber";
 import Button from "../../shared/components/Button";
 import Switch from "../../shared/components/Switch/Switch";
+import notificationCtx from "../../shared/contexts/notificationContext.ts";
 
 const renderStats = ({
 	totalConsumption,
@@ -53,8 +55,9 @@ interface Filters {
 const ALLOWED_FILES = ["text/csv"];
 
 const Dashboard = () => {
+	const notifCtx = useContext(notificationCtx);
 	const [excelData, setExcelData] = useState({} as ExcelData);
-	const [stats, setStats] = useState({
+	const [stats] = useState({
 		totalConsumption: 0,
 		clusterConsumption: 0,
 	});
@@ -112,14 +115,17 @@ const Dashboard = () => {
 		if (!isEmpty(excelData)) {
 			// perform calculation for stats
 
+			generateAlert();
+
 			if (visibleDatasets.length === 0)
 				setVisibleDatasets(Object.keys(excelData).slice(1));
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [excelData]);
 
 	const handleApplyFilter = ({ from, to, meter }: Filters) => {
 		if (moment(from).isAfter(moment(to)))
-			return toast.error("From date cannot be after to date");
+			return toast.error("From date cannot be greater than date");
 
 		if (from && to) {
 			const filteredExcelData = {};
@@ -140,6 +146,53 @@ const Dashboard = () => {
 
 		// Only work when a meter is selected
 		if (meter) setVisibleDatasets([meter]);
+	};
+
+	// generate alerts
+	const generateAlert = () => {
+		const notificationData: INotification[] = [];
+		const MAX_POWER_CONSUMPTION_LIMIT = 1000;
+		const MAX_LEAKAGE_LIMIT = 300;
+		const {
+			timestamp,
+			m1_power,
+			m2_power,
+			m3_power,
+			m4_power,
+			cluster_meter_power,
+		} = excelData;
+		let powerConsumed = 0;
+
+		for (let i = 0; i < excelData?.m1_power?.length; i++) {
+			powerConsumed = +m1_power[i] + +m2_power[i] + +m3_power[i] + +m4_power[i];
+
+			if (powerConsumed >= MAX_POWER_CONSUMPTION_LIMIT) {
+				notificationData.push({
+					id: uniqueId(),
+					description: "Total power consumption exceeds 1000 watts",
+					timestamp: timestamp[i],
+					timestampIdx: i,
+					notification_category: "tpc",
+					is_read: false,
+				});
+			}
+
+			const leakageCurrent = Math.abs(+cluster_meter_power[i] - powerConsumed);
+			if (leakageCurrent >= MAX_LEAKAGE_LIMIT) {
+				notificationData.push({
+					id: uniqueId(),
+					description:
+						"Leakage current has exceeded the set limit of 300 watts",
+					timestamp: timestamp[i],
+					timestampIdx: i,
+					notification_category: "lcurr",
+					is_read: false,
+				});
+			}
+		}
+
+		// console.log(notificationData);
+		notifCtx?.updateNotifications(notificationData);
 	};
 
 	return (
