@@ -19,24 +19,23 @@ import Switch from "../../shared/components/Switch/Switch";
 import notificationCtx from "../../shared/contexts/notificationContext.ts";
 
 const renderStats = ({
-	totalConsumption,
-	clusterConsumption,
+	maxConsumption,
+	maxLeakageCurrent,
 }: {
-	totalConsumption: number;
-	clusterConsumption: number;
+	maxConsumption: number;
+	maxLeakageCurrent: number;
 }) => (
 	<div className="flex gap-4">
-		{/* FIXME: Replace the stats with actual data */}
 		<StatCard
-			label="Total power consumption"
+			label="Max Power consumption by all meters"
 			accentClasses="before:bg-accent-1"
-			stats={formatNumber(totalConsumption)}
+			stats={formatNumber(maxConsumption)}
 			icon={<GiPowerLightning size={24} className="text-accent-1" />}
 		/>
 		<StatCard
-			label="Cluster meter consumption"
+			label="Max Leakage current till date"
 			accentClasses="before:bg-accent-2"
-			stats={formatNumber(clusterConsumption)}
+			stats={formatNumber(maxLeakageCurrent)}
 			icon={<MdElectricMeter size={24} className="text-accent-2" />}
 		/>
 	</div>
@@ -57,9 +56,9 @@ const ALLOWED_FILES = ["text/csv"];
 const Dashboard = () => {
 	const notifCtx = useContext(notificationCtx);
 	const [excelData, setExcelData] = useState({} as ExcelData);
-	const [stats] = useState({
-		totalConsumption: 0,
-		clusterConsumption: 0,
+	const [stats, setStats] = useState({
+		maxConsumption: 0,
+		maxLeakageCurrent: 0,
 	});
 	const [isLineChart, setLineChart] = useState<boolean>(false);
 	const [visibleDatasets, setVisibleDatasets] = useState<string[]>([]);
@@ -153,6 +152,8 @@ const Dashboard = () => {
 		const notificationData: INotification[] = [];
 		const MAX_POWER_CONSUMPTION_LIMIT = 1000;
 		const MAX_LEAKAGE_LIMIT = 300;
+		let maxConsumption = 0;
+		let maxLeakageCurrent = 0;
 		const {
 			timestamp,
 			m1_power,
@@ -161,12 +162,22 @@ const Dashboard = () => {
 			m4_power,
 			cluster_meter_power,
 		} = excelData;
-		let powerConsumed = 0;
 
 		for (let i = 0; i < excelData?.m1_power?.length; i++) {
-			powerConsumed = +m1_power[i] + +m2_power[i] + +m3_power[i] + +m4_power[i];
+			const totalPower =
+				+(m1_power[i] ?? 0) +
+				+(m2_power[i] ?? 0) +
+				+(m3_power[i] ?? 0) +
+				+(m4_power[i] ?? 0);
 
-			if (powerConsumed >= MAX_POWER_CONSUMPTION_LIMIT) {
+			const leakageCurrent = Math.abs(
+				(+cluster_meter_power[i] ?? 0) - totalPower
+			);
+
+			maxConsumption = Math.max(maxConsumption, totalPower);
+			maxLeakageCurrent = Math.max(maxLeakageCurrent, leakageCurrent);
+
+			if (totalPower >= MAX_POWER_CONSUMPTION_LIMIT) {
 				notificationData.push({
 					id: uniqueId(),
 					description: "Total power consumption exceeds 1000 watts",
@@ -177,7 +188,6 @@ const Dashboard = () => {
 				});
 			}
 
-			const leakageCurrent = Math.abs(+cluster_meter_power[i] - powerConsumed);
 			if (leakageCurrent >= MAX_LEAKAGE_LIMIT) {
 				notificationData.push({
 					id: uniqueId(),
@@ -191,7 +201,10 @@ const Dashboard = () => {
 			}
 		}
 
-		// console.log(notificationData);
+		setStats({
+			maxConsumption,
+			maxLeakageCurrent,
+		});
 		notifCtx?.updateNotifications(notificationData);
 	};
 
