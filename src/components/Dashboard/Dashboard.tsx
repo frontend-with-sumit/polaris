@@ -2,7 +2,7 @@ import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import moment, { Moment } from "moment";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
-import { isEmpty, uniqueId } from "lodash";
+import { isEmpty, uniqueId, isEqual } from "lodash";
 
 import { GiPowerLightning } from "react-icons/gi";
 import { MdElectricMeter } from "react-icons/md";
@@ -52,6 +52,14 @@ interface Filters {
 }
 
 const ALLOWED_FILES = ["text/csv"];
+const VALID_COLS = [
+	"Timestamp",
+	"M1 Power (Watts)",
+	"M2 Power (Watts)",
+	"M3 Power (Watts)",
+	"M4 Power (Watts)",
+	"Cluster Meter Power (Watts)",
+];
 
 const Dashboard = () => {
 	const notifCtx = useContext(notificationCtx);
@@ -84,6 +92,12 @@ const Dashboard = () => {
 			});
 
 			const labels = data[0] as string[];
+
+			if (!isEqual(labels, VALID_COLS)) {
+				if (fileInputRef.current) fileInputRef.current.value = "";
+				return toast.error("Invalid columns");
+			}
+
 			const formattedLabels = labels.map((label) =>
 				label
 					.toLowerCase()
@@ -112,10 +126,7 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		if (!isEmpty(excelData)) {
-			// perform calculation for stats
-
-			generateAlert();
-
+			generateAlertAndStats();
 			if (visibleDatasets.length === 0)
 				setVisibleDatasets(Object.keys(excelData).slice(1));
 		}
@@ -147,8 +158,7 @@ const Dashboard = () => {
 		if (meter) setVisibleDatasets([meter]);
 	};
 
-	// generate alerts
-	const generateAlert = () => {
+	const generateAlertAndStats = () => {
 		const notificationData: INotification[] = [];
 		const MAX_POWER_CONSUMPTION_LIMIT = 1000;
 		const MAX_LEAKAGE_LIMIT = 300;
@@ -228,7 +238,7 @@ const Dashboard = () => {
 								visibleDatasets={visibleDatasets}
 							/>
 							<Switch
-								className="my-3 m-auto"
+								className="mt-5 m-auto"
 								isChecked={isLineChart}
 								onChange={() => setLineChart((prev) => !prev)}
 								leftLabel={
