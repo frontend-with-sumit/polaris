@@ -1,0 +1,20 @@
+.toggle-switch {
+	@apply relative inline-block w-10 h-6 flex;
+}
+
+.toggle-switch-slider {
+	@apply absolute top-0 left-0 right-0 bottom-0 cursor-pointer bg-gray-300 duration-[0.4s] rounded-full;
+}
+
+.toggle-switch-slider:before {
+	@apply content-[""] absolute left-1 bottom-1 h-4 w-4 bg-white duration-[0.4s] rounded-full;
+}
+
+.toggle-switch-checkbox:checked + .toggle-switch-slider {
+	@apply bg-primary-700;
+}
+
+.toggle-switch-checkbox:checked + .toggle-switch-slider:before {
+	/* transform: translateX(26px); */
+	@apply translate-x-4;
+}
