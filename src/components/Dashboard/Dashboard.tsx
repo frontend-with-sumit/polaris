@@ -194,7 +194,7 @@ const Dashboard = () => {
 				+(m4_power[i] ?? 0);
 
 			const leakageCurrent = Math.abs(
-				(+cluster_meter_power[i] ?? 0) - totalPower
+				+(cluster_meter_power[i] ?? 0) - totalPower
 			);
 
 			maxConsumption = Math.max(maxConsumption, totalPower);
