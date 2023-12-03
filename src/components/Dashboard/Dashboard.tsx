@@ -152,10 +152,15 @@ const Dashboard = () => {
 
 		if (from && to) {
 			const filteredExcelData = {};
-			const fromIdx = fetchTimestampIdx(from);
-			const toIdx = fetchTimestampIdx(to);
-
 			const legends = Object.keys(excelData);
+
+			const fromIdx =
+				fetchTimestampIdx(from) !== -1 ? fetchTimestampIdx(from) : 0;
+			const toIdx =
+				fetchTimestampIdx(to) !== -1
+					? fetchTimestampIdx(to)
+					: excelData?.timestamp?.length;
+
 			legends.forEach((legend) => {
 				filteredExcelData[legend] = excelData[legend].slice(fromIdx, toIdx + 1);
 			});
