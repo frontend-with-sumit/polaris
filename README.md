@@ -1,5 +1,5 @@
 # Assignment - Dashboard
-A dashboard for visualizing the data of meter readings from a csv file.
+An interactive dashboard showcasing meter reading data from a CSV file. 
 
 ## Demo
 [Live Link](https://polaris-virid.vercel.app)
