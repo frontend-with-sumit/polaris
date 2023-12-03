@@ -7,7 +7,7 @@ import { INotification } from "../../../components/Dashboard/Header/Notification
 interface Props {
 	children: React.ReactNode;
 	notifications: INotification[];
-	activeTimestamp: number | undefined;
+	activeTimestamp: number;
 	onUpdateNotifications: (items: INotification[]) => void;
 	onUpdateActiveTimestamp: (item: number) => void;
 }
