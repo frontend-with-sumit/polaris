@@ -1,30 +1,29 @@
-# React + TypeScript + Vite
+# Assignment - Dashboard
+A dashboard for visualizing the data of meter readings from a csv file.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Demo
+[Live Link](https://polaris-virid.vercel.app/visualize)
 
-Currently, two official plugins are available:
+## Description
+The project is a dashboard UI implemented in ReactJS and TypeScript, offering users the ability to upload CSV files and visualize the data using Chart.js for creating charts. This choice was made due to Chart.js's robustness and user-friendly features, making it an ideal fit for implementing these functionalities.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The UI design is constructed entirely in ReactJS and utilizes TypeScript for strong typing, enhancing code reliability and development efficiency. Additionally, TailwindCSS is employed for styling purposes, allowing for rapid and customizable UI development through utility classes.
 
-## Expanding the ESLint configuration
+The combination of ReactJS and TypeScript ensures a structured and maintainable codebase, while TailwindCSS streamlines styling by leveraging utility-first classes. Overall, this tech stack enables a scalable, responsive, and intuitive dashboard experience for users interacting with uploaded CSV data presented through Chart.js visualizations.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+## Running the project
+- Clone the project
+```
+git clone https://github.com/frontend-with-sumit/polaris.git
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+- Install the dependencies
+```
+npm install
+```
+
+- Run the project
+```
+npm run dev
+```
