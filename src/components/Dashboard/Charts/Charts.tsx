@@ -1,11 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useRef, useState } from "react";
 import { isEmpty, capitalize } from "lodash";
 import {
 	Chart as ChartJS,
 	BarElement,
 	LineElement,
-	CategoryScale, // x
-	LinearScale, // y
+	CategoryScale,
+	LinearScale,
 	PointElement,
 	Tooltip,
 	Legend,
@@ -13,8 +14,9 @@ import {
 	Chart,
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
+
 import { ExcelData } from "../Dashboard";
-import Button from "../../../shared/components/Button";
+
 import notificationCtx from "../../../shared/contexts/notificationContext";
 
 ChartJS.register(
