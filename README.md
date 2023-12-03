@@ -11,6 +11,8 @@ The UI design is constructed entirely in ReactJS and utilizes TypeScript for str
 
 The combination of ReactJS and TypeScript ensures a structured and maintainable codebase, while TailwindCSS streamlines styling by leveraging utility-first classes. Overall, this tech stack enables a scalable, responsive, and intuitive dashboard experience for users interacting with uploaded CSV data presented through Chart.js visualizations.
 
+## Consideration
+- Due to unknown reasons, vercel is showing 404 error while trying to navigate to url. But in-website navigation is working perfectly.
 
 ## Running the project
 - Clone the project
