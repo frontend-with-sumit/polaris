@@ -2,7 +2,7 @@
 A dashboard for visualizing the data of meter readings from a csv file.
 
 ## Demo
-[Live Link](https://polaris-virid.vercel.app/visualize)
+[Live Link](https://polaris-virid.vercel.app)
 
 ## Description
 The project is a dashboard UI implemented in ReactJS and TypeScript, offering users the ability to upload CSV files and visualize the data using Chart.js for creating charts. This choice was made due to Chart.js's robustness and user-friendly features, making it an ideal fit for implementing these functionalities.
