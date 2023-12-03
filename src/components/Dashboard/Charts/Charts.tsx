@@ -48,7 +48,8 @@ interface ChartData {
 const Charts = ({ excelData, type, visibleDatasets }: Props) => {
 	const notifCtx = useContext(notificationCtx);
 	const [chartData, setChartData] = useState({} as ChartData);
-	const chartRef = useRef<Chart | null>(null);
+	const lineRef = useRef<ChartJS<"line", number[], string>>(null);
+	const barRef = useRef<ChartJS<"bar", number[], string>>(null);
 
 	const options = {
 		point: {
@@ -134,9 +135,11 @@ const Charts = ({ excelData, type, visibleDatasets }: Props) => {
 	}, [notifCtx?.activeTimestamp]);
 
 	const handleHighlightTimestamp = () => {
-		if (chartRef.current !== null && notifCtx) {
-			const chartInstance: Chart = chartRef.current;
+		let chartInstance: Chart | null = null;
+		if (type === "line") chartInstance = lineRef.current;
+		else chartInstance = barRef.current;
 
+		if (chartInstance !== null && notifCtx) {
 			const activeItems = chartData?.datasets.map((_, idx) => ({
 				datasetIndex: idx,
 				index: notifCtx?.activeTimestamp,
@@ -145,7 +148,8 @@ const Charts = ({ excelData, type, visibleDatasets }: Props) => {
 			chartInstance.setActiveElements(activeItems);
 
 			chartData.datasets.forEach((_, idx) => {
-				chartInstance.data.datasets[idx].hoverBackgroundColor = "red";
+				if (chartInstance)
+					chartInstance.data.datasets[idx].hoverBackgroundColor = "red";
 			});
 
 			chartInstance.update();
@@ -156,9 +160,9 @@ const Charts = ({ excelData, type, visibleDatasets }: Props) => {
 		<div className="h-[400px] w-full">
 			{!isEmpty(chartData) &&
 				(type === "line" ? (
-					<Line ref={chartRef} data={chartData} options={options} />
+					<Line ref={lineRef} data={chartData} options={options} />
 				) : (
-					<Bar ref={chartRef} data={chartData} options={options} />
+					<Bar ref={barRef} data={chartData} options={options} />
 				))}
 		</div>
 	);
