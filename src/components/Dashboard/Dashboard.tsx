@@ -27,7 +27,7 @@ const RenderStats = ({
 }) => (
 	<div className="flex gap-4">
 		<StatCard
-			label="Max Power consumption by all meters"
+			label="Max Power consumption"
 			accentClasses="before:bg-accent-1"
 			stats={formatNumber(maxConsumption)}
 			icon={<GiPowerLightning size={24} className="text-accent-1" />}
@@ -72,6 +72,31 @@ const Dashboard = () => {
 	const [visibleDatasets, setVisibleDatasets] = useState<string[]>([]);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+	useEffect(() => {
+		if (!isEmpty(excelData)) {
+			generateAlertAndStats();
+			if (visibleDatasets.length === 0)
+				setVisibleDatasets(Object.keys(excelData).slice(1));
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [excelData]);
+
+	const readFile = async (file: File) => {
+		const arrayBuffer = await file.arrayBuffer();
+
+		const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
+			type: "array",
+		});
+		const sheetName = workbook.SheetNames[0];
+		const sheet = workbook.Sheets[sheetName];
+
+		const data = XLSX.utils.sheet_to_json(sheet, {
+			header: 1,
+		});
+
+		return data;
+	};
+
 	const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
 
@@ -79,32 +104,21 @@ const Dashboard = () => {
 			if (!ALLOWED_FILES.includes(file?.type))
 				return toast.error("File is not supported");
 
-			const arrayBuffer = await file.arrayBuffer();
+			const fileData = await readFile(file);
 
-			const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
-				type: "array",
-			});
-			const sheetName = workbook.SheetNames[0];
-			const sheet = workbook.Sheets[sheetName];
-
-			const data = XLSX.utils.sheet_to_json(sheet, {
-				header: 1,
-			});
-
-			const labels = data[0] as string[];
-
+			const labels = fileData[0] as string[];
 			if (!isEqual(labels, VALID_COLS)) {
 				if (fileInputRef.current) fileInputRef.current.value = "";
 				return toast.error("Invalid columns");
 			}
-
 			const formattedLabels = labels.map((label) =>
 				label
 					.toLowerCase()
 					.replace(/ \(watts\)/g, "")
 					.replace(/ /g, "_")
 			);
-			const datasets = data.slice(1) as (string | number)[][];
+
+			const datasets = fileData.slice(1) as (string | number)[][];
 			const formattedData: { [k: string]: (string | number)[] } = {
 				timestamp: [],
 				m1_power: [],
@@ -124,27 +138,22 @@ const Dashboard = () => {
 		}
 	};
 
-	useEffect(() => {
-		if (!isEmpty(excelData)) {
-			generateAlertAndStats();
-			if (visibleDatasets.length === 0)
-				setVisibleDatasets(Object.keys(excelData).slice(1));
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [excelData]);
+	const fetchTimestampIdx = (date: string | Moment) =>
+		excelData.timestamp.findIndex((ts) =>
+			moment(ts, "DD/MM/YY HH:mm").isSameOrAfter(moment(date))
+		);
 
 	const handleApplyFilter = ({ from, to, meter }: Filters) => {
 		if (moment(from).isAfter(moment(to)))
 			return toast.error("From date cannot be greater than date");
 
+		if ((from && !to) || (!from && to))
+			return toast.error("Please select both dates");
+
 		if (from && to) {
 			const filteredExcelData = {};
-			const fromIdx = excelData.timestamp.findIndex((ts) =>
-				moment(ts, "DD/MM/YY HH:mm").isSameOrAfter(moment(from))
-			);
-			const toIdx = excelData.timestamp.findIndex((ts) =>
-				moment(ts, "DD/MM/YY HH:mm").isSameOrAfter(moment(to))
-			);
+			const fromIdx = fetchTimestampIdx(from);
+			const toIdx = fetchTimestampIdx(to);
 
 			const legends = Object.keys(excelData);
 			legends.forEach((legend) => {
@@ -154,7 +163,6 @@ const Dashboard = () => {
 			setExcelData(filteredExcelData);
 		}
 
-		// Only work when a meter is selected
 		if (meter) setVisibleDatasets([meter]);
 	};
 
@@ -266,8 +274,8 @@ const Dashboard = () => {
 					) : (
 						<div className="flex flex-col items-center gap-6 py-10">
 							<p className="text-base text-center">
-								To analyze and show your data we need a .csv file. Upload one
-								using below button
+								To analyze and show your data we need a .csv file. Upload using
+								below button
 							</p>
 							<input
 								ref={fileInputRef}

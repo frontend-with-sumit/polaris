@@ -1,11 +1,14 @@
+import { useContext, useEffect, useRef, useState } from "react";
 import { FaRegBell } from "react-icons/fa6";
 import { BiSolidBellRing } from "react-icons/bi";
-import { useContext, useEffect, useRef, useState } from "react";
+import { MdOutlineNotificationsOff } from "react-icons/md";
+
 import Switch from "../../../../shared/components/Switch/Switch";
 import RenderIf from "../../../../shared/components/RenderIf";
 import useClickOutside from "../../../../shared/hooks/useClickOutside";
-import NotificationsList from "./NotificationsList";
 import notificationCtx from "../../../../shared/contexts/notificationContext";
+
+import NotificationsList from "./NotificationsList";
 
 const RenderNotificationBells = ({
 	isAllowed,
@@ -20,6 +23,14 @@ const RenderNotificationBells = ({
 }) => {
 	return (
 		<>
+			<RenderIf condition={!isAllowed}>
+				<MdOutlineNotificationsOff
+					size={30}
+					className={`cursor-pointer`}
+					onClick={onToggleNotification}
+				/>
+			</RenderIf>
+
 			<RenderIf condition={isAllowed && hasUnread}>
 				<BiSolidBellRing
 					size={25}
@@ -30,7 +41,7 @@ const RenderNotificationBells = ({
 				/>
 			</RenderIf>
 
-			<RenderIf condition={!isAllowed || !hasUnread}>
+			<RenderIf condition={isAllowed && !hasUnread}>
 				<FaRegBell
 					size={25}
 					className="cursor-pointer"
@@ -94,19 +105,20 @@ const Notification = () => {
 
 	const handleNotificationControl = (settings: { [k: string]: boolean }) => {
 		const controlCenterClone: INotificationControl = { ...notificationControl };
-		for (const [key, value] of Object.entries(settings)) {
+
+		for (const [key, value] of Object.entries(settings))
 			controlCenterClone[key] = value;
-		}
 
 		setNotificationControl(controlCenterClone);
 	};
 
+	// Close the notifications popup when clicked outside
 	useClickOutside(notificationRef, () =>
 		handleNotificationControl({ showNotifications: false })
 	);
 
 	useEffect(() => {
-		if (notifCtx?.notifications.length) {
+		if (notifCtx?.notifications?.length) {
 			const notificationsFromCtx = notifCtx?.notifications;
 
 			const unreadNotifications = notificationsFromCtx.some(
@@ -121,6 +133,8 @@ const Notification = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [notifCtx?.notifications]);
 
+	// When a notifications is clicked, it should mark it as read
+	// also highlight the active timestamp
 	const markAsRead = (notificationId: string) => {
 		const notificationsClone = [...notificationItems];
 		const notification = notificationsClone.find(
@@ -130,8 +144,6 @@ const Notification = () => {
 		if (notification) {
 			notification.is_read = true;
 			setNotificationItems(notificationsClone);
-
-			// dispatch an action to highlight the timestamp on graph
 			notifCtx?.updateActiveTimestamp(notification?.timestampIdx);
 		}
 	};
@@ -163,8 +175,6 @@ const Notification = () => {
 						onChangeSetting={handleAllowNotification}
 					/>
 
-					{/* Notifications list */}
-					{/* TODO: On notification click highlight the timestamp on chart */}
 					<NotificationsList
 						isAllowed={notificationControl?.notificationsAllowed}
 						notifications={notificationItems}

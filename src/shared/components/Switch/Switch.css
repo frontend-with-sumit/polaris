@@ -1,5 +1,5 @@
 .toggle-switch {
-	@apply relative inline-block w-10 h-6 flex;
+	@apply relative w-10 h-6 flex;
 }
 
 .toggle-switch-slider {
@@ -15,6 +15,5 @@
 }
 
 .toggle-switch-checkbox:checked + .toggle-switch-slider:before {
-	/* transform: translateX(26px); */
 	@apply translate-x-4;
 }
